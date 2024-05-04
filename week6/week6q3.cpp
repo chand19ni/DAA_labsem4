@@ -1,86 +1,74 @@
 #include <iostream>
-#include <list>
 #include <vector>
 using namespace std;
+
 class Graph
 {
-  int vertices;
-  list<int> *adjList;
-
 public:
-  Graph(int v)
+  int vertices;
+  vector<vector<int>> adj;
+  Graph(int v) : vertices(v), adj(v, vector<int>())
   {
-    vertices = v;
-    adjList = new list<int>[v];
   }
-  void add_edge(int src, int dest)
+  void addEdge(int src, int dest)
   {
-    adjList[src].push_back(dest);
+    adj[src].push_back(dest);
   }
-  void print()
+  bool DFScheck(int node, vector<bool> &visited, vector<bool> &pathVisited)
   {
-    for (int i = 0; i < vertices; i++)
+    visited[node] = true;
+    pathVisited[node] = true;
+    for (auto it : adj[node])
     {
-      cout << i << " -> ";
-      for (int j : adjList[i])
+      if (!visited[it])
       {
-        cout << j << " ";
-      }
-      cout << endl;
-    }
-  }
-  bool iscyclic(int v, vector<bool> &visited, vector<bool> recStack)
-  {
-    if (!visited[v])
-    {
-      recStack[v] = true;
-      visited[v] = true;
-      for (int i : adjList[v])
-      {
-        if (iscyclic(i, visited, recStack) && !visited[i])
-        {
-        }
-        else if (recStack[i])
-        {
+        if (DFScheck(it, visited, pathVisited))
           return true;
-        }
       }
-    }
-    recStack[v] = false;
-    return false;
-  }
-  bool cycle()
-  {
-    vector<bool> visited(vertices, false);
-    vector<bool> recStack(vertices, false);
-    for (int i = 0; i < vertices; i++)
-    {
-      if (iscyclic(i, visited, recStack))
+      else if (pathVisited[it])
       {
         return true;
       }
+    }
+    pathVisited[node] = false;
+    return false;
+  }
+
+  bool iscyclic()
+  {
+    vector<bool> visited(vertices, false);
+    vector<bool> pathVisited(vertices, false);
+    for (int i = 0; i < vertices; i++)
+    {
+      if (!visited[i])
+        if (DFScheck(i, visited, pathVisited) == true)
+          return true;
     }
     return false;
   }
 };
 int main()
 {
-  Graph g(5);
-  g.add_edge(0, 1);
-  g.add_edge(0, 2);
-  g.add_edge(1, 2);
-  g.add_edge(3, 1);
-  g.add_edge(1, 4);
-  g.add_edge(3, 2);
-  g.add_edge(4, 3);
-  g.print();
-  if (g.cycle())
+  Graph g(10);
+  g.addEdge(0, 1);
+  g.addEdge(1, 2);
+  g.addEdge(2, 3);
+  g.addEdge(3, 4);
+  g.addEdge(4, 5);
+  g.addEdge(2, 6);
+  g.addEdge(6, 4);
+  g.addEdge(7, 1);
+  g.addEdge(7, 8);
+  g.addEdge(8, 9);
+  g.addEdge(9, 7);
+  if (g.iscyclic())
   {
-    cout << "Yes cyclic Graph!" << endl;
+    cout << "Yes Cycle Exists.";
   }
   else
   {
-    cout << "NO cyclic Graph!" << endl;
+    cout << "No Cycle Exists.";
   }
+
   return 0;
 }
